@@ -1,12 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// 103개 전체 일정 데이터 (address 항목 도로명 주소 적용)
+// 📁 정적 파일(index.html 등) 제공 설정
+app.use(express.static(__dirname));
+
+// 103개 전체 일정 데이터 (도로명 주소 적용)
 let dbSchedules = [
     { id: "hq", title: "MBC 보도국 (본사)", date: "상시 근무", datesList: [], category: "서울 마포", address: "서울특별시 마포구 성암로 267", lat: 37.5802, lng: 126.8903, reporter: "보도국 전체", camReporter: "-", newsReporter: "보도국", equipment: "ENG, Z90, FX3, 오즈모 등", desc: "상시 취재 및 보도 베이스", isMainHQ: true },
     { id: "s1", title: "코스피 5,700 종가 스케치", date: "2026-02-20", datesList: ["2026-02-20"], category: "서울 여의도", address: "서울특별시 영등포구 여의나루로 76", lat: 37.5252, lng: 126.9248, reporter: "한재훈 PD / 김민형 취재기자", camReporter: "한재훈", newsReporter: "김민형", equipment: "6mm", desc: "한국거래소 종가, 정유/방산/금융주 전광판 스케치 및 스탠드업" },
@@ -45,7 +49,7 @@ let dbSchedules = [
     { id: "s34", title: "베니스의 상인 기자간담회", date: "2026-05-09", datesList: ["2026-05-09"], category: "서울 종로", address: "서울특별시 종로구 대학로12길 31", lat: 37.5828, lng: 127.0028, reporter: "강종수 PD / 임소정 취재기자", camReporter: "강종수", newsReporter: "임소정", equipment: "6mm", desc: "연출 및 배우 등장, 포토타임 질의응답" },
     { id: "s35", title: "홍장원 퇴장 뻗치기", date: "2026-05-22", datesList: ["2026-05-22"], category: "경기 과천", address: "경기도 과천시 관문로 47", lat: 37.4282, lng: 126.9892, reporter: "박다원 영상기자 / 김지성 취재기자", camReporter: "박다원", newsReporter: "김지성", equipment: "ENG", desc: "홍장원 퇴장 스케치 및 답변 싱크" },
     { id: "s36", title: "환기미술관 은행나무 제초제 주입 논란", date: "2026-05-26", datesList: ["2026-05-26"], category: "서울 종로", address: "서울특별시 종로구 자하문로40길 30", lat: 37.5921, lng: 126.9652, reporter: "전효석 PD / 김민욱 취재기자", camReporter: "전효석", newsReporter: "김민욱", equipment: "6mm", desc: "은행나무 스케치 및 부암동 주민 기자회견" },
-    { id: "s37", title: "설악산 케이블카 상부정류장 식생 고사", date: "2026-05-29 ~ 05-30", datesList: ["2026-05-29", "2026-05-30"], category: "강원 설악산", address: "강원특별자치도 속초시 설악산로 1091", lat: 38.1194, lng: 128.4656, reporter: "박다원 영상기자 / 김민욱 취재기자", camReporter: "박다원", newsReporter: "류현준", equipment: "Z90, 오즈모", desc: "희귀식물 이식지역 및 전문가 인터뷰 스케치" },
+    { id: "s37", title: "설악산 현장 인덱스 촬영", date: "2026-05-29 ~ 05-30", datesList: ["2026-05-29", "2026-05-30"], category: "강원 설악산", address: "강원특별자치도 속초시 설악산로 1091", lat: 38.1194, lng: 128.4656, reporter: "담당 취재진", camReporter: "미상", newsReporter: "미상", equipment: "Z90, 오즈모", desc: "희귀식물 이식지역 및 전문가 인터뷰 스케치" },
     { id: "s38", title: "카카오 2차 노사 조정", date: "2026-05-27", datesList: ["2026-05-27"], category: "경기 수원", address: "경기도 수원시 영통구 청사로 100", lat: 37.2638, lng: 127.0288, reporter: "박다원 영상기자 / 제은효 취재기자", camReporter: "박다원", newsReporter: "제은효", equipment: "ENG", desc: "김왕 조정위원장 발언 싱크" },
     { id: "s39", title: "6월 3일 인천시장 유정복 후보 상황실", date: "2026-06-03", datesList: ["2026-06-03"], category: "인천 미추홀", address: "인천광역시 미추홀구 미추홀대로 695", lat: 37.4528, lng: 126.6782, reporter: "한재훈 PD / 이종혁 취재기자", camReporter: "한재훈", newsReporter: "이종혁", equipment: "6mm", desc: "유정복 후보 소감 발표 및 퇴장 싱크" },
     { id: "s40", title: "잠실7동 제2투표소 상황 커버", date: "2026-06-04", datesList: ["2026-06-04"], category: "서울 송파", address: "서울특별시 송파구 올림픽로4길 15", lat: 37.5112, lng: 127.0782, reporter: "독고명 VJ / 이종혁 취재기자", camReporter: "독고명", newsReporter: "이종혁", equipment: "스마트폰", desc: "투표소 현장 발언 스케치" },
@@ -150,6 +154,12 @@ app.post('/api/schedules', (req, res) => {
     };
     dbSchedules.push(newSchedule);
     res.json({ success: true, item: newSchedule });
+});
+
+// 🌐 4. [프론트엔드 라우트 캐치올] API를 제외한 모든 웹 요청 시 index.html 반환
+app.get('*', (req, res, next) => {
+    if (req.url.startsWith('/api')) return next();
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
