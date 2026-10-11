@@ -9,7 +9,6 @@ app.use(express.json());
 
 const DATA_FILE = path.join(__dirname, 'schedules.json');
 
-// JSON 파일 읽기 헬퍼 함수
 function readSchedules() {
     try {
         if (!fs.existsSync(DATA_FILE)) return [];
@@ -21,7 +20,6 @@ function readSchedules() {
     }
 }
 
-// JSON 파일 저장 헬퍼 함수
 function saveSchedules(data) {
     try {
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
@@ -30,7 +28,6 @@ function saveSchedules(data) {
     }
 }
 
-// 주소에서 서울은 '구', 지방/경기는 '시/군'을 자동 추출
 function parseRegion(address) {
     if (!address) return "전국";
     if (address.includes("서울")) {
@@ -42,13 +39,11 @@ function parseRegion(address) {
     return address.split(" ")[0];
 }
 
-// 1. 전체 위치 가벼운 목록 조회
 app.get('/api/locations/light', (req, res) => {
     const schedules = readSchedules();
     res.json(schedules);
 });
 
-// 2. 단일 일정 상세 조회
 app.get('/api/schedules/detail', (req, res) => {
     const id = parseInt(req.query.id);
     const schedules = readSchedules();
@@ -56,7 +51,6 @@ app.get('/api/schedules/detail', (req, res) => {
     res.json(item);
 });
 
-// 3. 신규 일정 추가 (JSON 파일 자동 업데이트)
 app.post('/api/schedules', (req, res) => {
     const schedules = readSchedules();
     const newSchedule = {
