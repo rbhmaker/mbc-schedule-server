@@ -1,7 +1,7 @@
 {
   "name": "mbc-schedule-server",
   "version": "1.0.0",
-  "description": "MBC Location Schedule Backend Server",
+  "description": "MBC 취재 및 촬영 로케이션 백엔드 API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
