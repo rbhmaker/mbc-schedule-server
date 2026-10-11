@@ -15,7 +15,6 @@ function readSchedules() {
         const data = fs.readFileSync(DATA_FILE, 'utf8');
         return JSON.parse(data || '[]');
     } catch (err) {
-        console.error("JSON 파일 읽기 오류:", err);
         return [];
     }
 }
@@ -23,9 +22,7 @@ function readSchedules() {
 function saveSchedules(data) {
     try {
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    } catch (err) {
-        console.error("JSON 파일 저장 오류:", err);
-    }
+    } catch (err) {}
 }
 
 function parseRegion(address) {
@@ -40,15 +37,13 @@ function parseRegion(address) {
 }
 
 app.get('/api/locations/light', (req, res) => {
-    const schedules = readSchedules();
-    res.json(schedules);
+    res.json(readSchedules());
 });
 
 app.get('/api/schedules/detail', (req, res) => {
     const id = parseInt(req.query.id);
     const schedules = readSchedules();
-    const item = schedules.filter(s => s.id === id);
-    res.json(item);
+    res.json(schedules.filter(s => s.id === id));
 });
 
 app.post('/api/schedules', (req, res) => {
@@ -59,10 +54,8 @@ app.post('/api/schedules', (req, res) => {
         regionName: parseRegion(req.body.address),
         isMainHQ: false
     };
-    
     schedules.push(newSchedule);
     saveSchedules(schedules);
-    
     res.status(201).json({ success: true, data: newSchedule });
 });
 
