@@ -4,62 +4,83 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+const DATA_FILE = path.join(__dirname, 'schedules.json');
+
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = path.join(__dirname, 'schedules.json');
-
-function readSchedules() {
+// 데이터 로드
+function getSchedules() {
     try {
-        if (!fs.existsSync(DATA_FILE)) return [];
         const data = fs.readFileSync(DATA_FILE, 'utf8');
-        return JSON.parse(data || '[]');
+        return JSON.parse(data);
     } catch (err) {
         return [];
     }
 }
 
+// 데이터 저장
 function saveSchedules(data) {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    } catch (err) {}
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function parseRegion(address) {
-    if (!address) return "전국";
-    if (address.includes("서울")) {
-        const m = address.match(/([가-힣]+구)/);
-        if (m) return m[1];
-    }
-    const m = address.match(/([가-힣]+시|[가-힣]+군)/);
-    if (m) return m[1];
-    return address.split(" ")[0];
-}
-
+// 1. 전체 일정 조회 API
 app.get('/api/locations/light', (req, res) => {
-    res.json(readSchedules());
+    const schedules = getSchedules();
+    res.json(schedules);
 });
 
-app.get('/api/schedules/detail', (req, res) => {
-    const id = parseInt(req.query.id);
-    const schedules = readSchedules();
-    res.json(schedules.filter(s => s.id === id));
-});
-
-app.post('/api/schedules', (req, res) => {
-    const schedules = readSchedules();
+// 2. 신규 일정 추가 API
+app.post('/api/locations', (req, res) => {
+    const schedules = getSchedules();
     const newSchedule = {
         id: Date.now(),
-        ...req.body,
-        regionName: parseRegion(req.body.address),
-        isMainHQ: false
+        title: req.body.title || '',
+        date: req.body.date || '',
+        category: req.body.category || '기타',
+        address: req.body.address || '',
+        lat: parseFloat(req.body.lat) || 37.5802,
+        lng: parseFloat(req.body.lng) || 126.8903,
+        reporter: req.body.reporter || '-',
+        cameraStaff: req.body.cameraStaff || '-',
+        equipment: req.body.equipment || '6mm',
+        newsUrl: req.body.newsUrl || '',
+        photoUrl: req.body.photoUrl || '',
+        desc: req.body.desc || '',
+        isMainHQ: false,
+        regionName: req.body.regionName || '전국'
     };
+
     schedules.push(newSchedule);
     saveSchedules(schedules);
-    res.status(201).json({ success: true, data: newSchedule });
+    res.status(201).json({ message: '성공적으로 저장되었습니다.', data: newSchedule });
 });
 
-const PORT = process.env.PORT || 3000;
+// 3. 기존 일정 수정 API
+app.put('/api/locations/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    let schedules = getSchedules();
+    const index = schedules.findIndex(item => item.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ message: '일정을 찾을 수 없습니다.' });
+    }
+
+    schedules[index] = { ...schedules[index], ...req.body };
+    saveSchedules(schedules);
+    res.json({ message: '성공적으로 수정되었습니다.', data: schedules[index] });
+});
+
+// 4. 일정 삭제 API
+app.delete('/api/locations/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    let schedules = getSchedules();
+    schedules = schedules.filter(item => item.id !== id);
+    saveSchedules(schedules);
+    res.json({ message: '성공적으로 삭제되었습니다.' });
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
