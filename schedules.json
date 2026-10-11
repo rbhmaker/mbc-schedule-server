@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "title": "MBC 상암 본사",
+    "date": "2026-03-01",
+    "category": "본사",
+    "address": "서울특별시 마포구 성암로 267",
+    "lat": 37.5802,
+    "lng": 126.8903,
+    "reporter": "MBC",
+    "equipment": "기본",
+    "newsUrl": "",
+    "photoUrl": "",
+    "desc": "MBC 뉴스센터 메인 본사입니다.",
+    "isMainHQ": true,
+    "regionName": "마포구"
+  },
+  {
+    "id": 2,
+    "title": "의정부 경찰서 취재",
+    "date": "2026-03-15",
+    "category": "사회부",
+    "address": "경기도 의정부시 가능동",
+    "lat": 37.7381,
+    "lng": 127.0337,
+    "reporter": "김취재 기자",
+    "equipment": "ENG 카메라",
+    "newsUrl": "https://imnews.imbc.com",
+    "photoUrl": "",
+    "desc": "현장 사건사고 취재 일정입니다.",
+    "isMainHQ": false,
+    "regionName": "의정부시"
+  }
+]
